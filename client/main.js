@@ -8,7 +8,7 @@ require(["jquery", "mustache", "sammy", "sammy-mustache"], function($, Mustache,
       // load some data
       this.load('/vote/' + this.params.vote, { json : true })
           // render a template
-          .render('/client/views/vote.mustache')
+          .render('client/views/vote.mustache')
 
           // swap the DOM with the new content
           .swap(function() {
@@ -37,7 +37,7 @@ require(["jquery", "mustache", "sammy", "sammy-mustache"], function($, Mustache,
     })
 
 	.get('#/vote-add', function() {
-		this.render('/client/views/vote/add.mustache')
+		this.render('client/views/vote/add.mustache')
 			.swap(function() {
 				$(".extendable-list").each(function(idx, ul) {
 					var id = ul.id;
