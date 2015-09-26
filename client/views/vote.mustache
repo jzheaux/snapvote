@@ -1,13 +1,23 @@
-
+{{#description}}
+{{description}}
+{{/description}}
+{{^description}}
+<div class="centered">
 	<h1>{{question}}</h1>
-	<form method="post">
-		<ul data-question-id="{{id}}">
-		{{#answers}}
-			<li data-answer-id="{{id}}">
-				<input type="radio" name="answerId" value="{{id}}"> {{text}}
-			</li>
-		{{/answers}}
-		</ul>
-		<input type="submit" class="btn btn-primary" value="Cast Vote"/>
-	</form>
-
+    <ul id="answers" data-question-id="{{id}}">
+    {{#answers}}
+        <li data-answer-id="{{id}}">
+        {{#total}}
+        {{text}} {{amount}} votes
+        {{/total}}
+        {{^total}}
+            <input type="radio" name="answerId" value="{{id}}"> {{text}}
+        {{/total}}
+        </li>
+    {{/answers}}
+    </ul>
+    {{^total}}
+    <input type="button" id="cast-vote" class="btn btn-primary" value="Cast Vote"/>
+    {{/total}}
+</div>
+{{/description}}

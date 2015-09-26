@@ -1,0 +1,62 @@
+body {
+	margin: 0;
+}
+
+.block:before {
+	content: '';
+	display: inline-block;
+	height: 100%;
+	vertical-align: middle;
+	margin-right: -0.25em;
+}
+
+.block {
+  width: 100%;
+  min-width: 200px;
+  background-color: #7AF;
+  font-family: sans-serif;
+  text-align: center;
+  padding: 2%;
+}
+
+.centered {
+  display: inline-block;
+  vertical-align: middle;
+  
+}
+
+ul {
+  padding: 0;
+}
+
+li {
+  list-style-type: none;
+  padding: 2% 0 2% 5%;
+  text-align: left;
+}
+
+li:hover {
+  background-color: #7A7;
+}
+
+.btn-primary {
+  width: 80%;
+  padding: 10px;
+  margin: auto;
+  background-color: orange;
+  border: 0;
+  color: white;
+  font-weight: bold;
+}
+
+form {
+  font-size: 1.2em;
+}
+
+input[type='radio'] {
+  margin-right: 2%;
+}
+
+dt {
+	text-align: left;
+}

@@ -31,7 +31,6 @@ server.pre(function(req, res, next) {
 	var agent = req.headers["user-agent"];
 	var address = req.remoteAddress;
 	req.hash = new Buffer(agent + address).toString('base64');
-	console.log("here! " + req.hash);
 	next();
 });
 

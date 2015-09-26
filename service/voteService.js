@@ -18,29 +18,28 @@ _exports.validateClient = function (credentials, req, cb) {
 module.exports = function(server) {
 	var hasAlreadyVotedOn = function(vote, hash, cb) {
 		vote.getAnswers().then(function(answers) {
-			var answersProcessed = 0;
-			for ( var i = 0; i < answers.length; i++ ) {
-				var callbackInvoked = false;
-				answers[i].getCasts().then(function(casts) {
-					for ( var j = 0; j < casts.length; j++ ) {
-						if ( casts[j].hash == hash ) {	
-							if ( !callbackInvoked ) {
-								callbackInvoked = true;
-								cb(true);
-							}
-						}
-					}
-					answersProcessed++;
-					if ( answersProcessed == answers.length ) {
-						callbackInvoked = true;
-						cb(false);
-					}
-				});
-			}
-			
+			hasAlreadyVotedOnAnswer(answers, 0, hash, cb);
 		});
 	}
 
+    var hasAlreadyVotedOnAnswer = function(answers, index, hash, cb) {
+        answers[index].getCasts().then(function(casts) {
+            doesCastBelongTo(answers, index, casts, 0, hash, cb);
+        });
+    }
+    
+    var doesCastBelongTo = function(answers, aIndex, casts, index, hash, cb) {
+        if ( index < casts.length && casts[index].hash == hash ) {
+            cb(true);
+        } else if ( casts.length > index + 1 ) {
+            doesCastBelongTo(answers, aIndex, casts, index + 1, hash, cb);
+        } else if ( answers.length > aIndex + 1 ) {
+            hasAlreadyVotedOnAnswer(answers, aIndex + 1, hash, cb);
+        } else {
+            cb(false);
+        }
+    }
+    
 	server.get('/votes/index', function (req, res, next) {
 		Vote.findAll()
 			.complete(function(error, votes) {
@@ -54,26 +53,26 @@ module.exports = function(server) {
 			});
         });
 
+    var addResultToResults = function(source, destination, index, total, cb) {
+		if ( destination.answers.length == source.length ) {
+			destination.total = { "amount" : total };
+			cb(destination);
+		} else {
+			var answer = source[index];
+			answer.getCasts().then(function(casts) {
+				var tally = { "text" : answer.text, "total" : { "amount" : casts.length } };
+				destination.answers.push(tally);
+				addResultToResults(source, destination, index + 1, total + casts.length, cb);
+			});
+		}
+	}
+
 	var getResults = function(vote, cb) {
 		var results = {};
 		results.question = vote.question;
 		results.answers = [];
 		vote.getAnswers().then(function(answers) {
-			var total = 0;
-			var answersProcessed = 0;
-			for ( var i = 0; i < answers.length; i++ ) {
-				var answer = answers[i];
-				answer.getCasts().then(function(casts) {
-					var tally = { "text" : answer.text, "total" : casts.length };
-					total += casts.length;
-					results.answers.push(tally);
-					answersProcessed++;
-					if ( answersProcessed == answers.length ) {
-						results.total = total;
-						cb(results);
-					}
-				});
-			}
+			addResultToResults(answers, results, 0, 0, cb);
 		});
 	}
 
@@ -83,16 +82,16 @@ module.exports = function(server) {
 
 	var isFinished = function(vote, cb) {
 		getTotalVotes(vote, function(total) {
-			cb(vote.endDate < new Date() && total < vote.maximumVotes);
+			cb(vote.endTime < new Date() || total >= vote.maximumVotes);
 		});
 	}
 
 	var canSeeResults = function(vote, hash, cb) {
 		isFinished(vote, function(finished) {
-			vote.hash == hash || 
+			var canSee = vote.hash == hash || 
 			( finished && vote.whenAreResultsPublic == 'AFTER' ) ||
 			( vote.whenAreResultsPublic == 'BEFORE' );
-			cb(canSeeResults);
+			cb(canSee);
 		});
 	}
 
@@ -102,20 +101,20 @@ module.exports = function(server) {
 			.complete(function(error, vote) {
 				if (error) return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)))
 		 
-				if ( vote ) {					
-					if ( vote.hash == req.authorization.credentials ) {
+				if ( vote ) {
+					if ( vote.hash == req.hash ) {
 						console.log("Showing results to owner");
 						getResults(vote, function(results) {
 							res.send(results);
 						});
 					} else {
-						hasAlreadyVotedOn(vote, req.authorization.credentials, function(voted) {
+						hasAlreadyVotedOn(vote, req.hash, function(voted) {
 							if ( voted ) {
 								console.log("This user already voted...");
-								canSeeResults(vote, req.authorization.credentials, function(canSee) {
+								canSeeResults(vote, req.hash, function(canSee) {
 									if ( canSee ) {
 										getResults(vote, function(results) {
-											res.send(results);										
+                                            res.send(results);										
 										});
 									} else {
 										res.send({ "description" : "Thanks for voting!" });														
@@ -125,11 +124,11 @@ module.exports = function(server) {
 								isFinished(vote, function(finished) {
 									if ( finished ) {
 										console.log("The voting is done...");
-										canSeeResults(vote, req.authorization.credentials, function(canSee) {
+										canSeeResults(vote, req.hash, function(canSee) {
 											if (canSee) {
 												getResults(vote, function(results) {
-	res.send(results);
-});
+	                                               res.send(results);
+                                                });
 											} else {
 												res.send({ "description" : "The vote is closed."});
 											}
@@ -174,12 +173,15 @@ module.exports = function(server) {
 			return next(new restify.InvalidArgumentError(JSON.stringify(errors)));
 		}
 
+        if ( vote.duration ) {
+            vote.endTime = new Date(new Date().getTime() + vote.duration * 60 * 60 * 1000);;
+        }
 		vote.minimumVotes = vote.minimumVotes || 1;
 		vote.endTime = vote.endTime || new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
 		vote.startTime = vote.startTime || new Date();
 		vote.randomizeAnswerOrder = vote.randomizeAnswerOrder || false;
 		vote.whenAreResultsPublic = vote.whenAreResultsPublic || 'AFTER';
-		vote.hash = req.authorization.credentials;
+		vote.hash = req.hash;
 		var answers = vote.answers;
 
 		Vote.create(vote)
@@ -204,7 +206,7 @@ module.exports = function(server) {
 
     server.post('/vote/:voteId/answer/:answerId/cast', function (req, res, next) {
  		var cast = {};
-		cast.hash = req.authorization.credentials;
+		cast.hash = req.hash;
 
 		Answer.find({ where : { id : req.params.answerId }})
 			.complete(function(error, answer) {
@@ -231,7 +233,7 @@ module.exports = function(server) {
 														return next(new restify.InvalidArgumentError(JSON.stringify(error.errors)));
 
 													answer.addCast(created);
-													res.send(201, { "description" : "Your vote of " + answer.text + " for " + answer.vote.question + " was cast." });			
+													res.send(201, { "description" : "Your vote of " + answer.text + " for " + vote.question + " was cast." });			
 												});
 										}
 									});

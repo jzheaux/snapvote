@@ -1,0 +1,39 @@
+<div class="centered">
+	<form method="post" action="#/vote">
+		<dl>
+			<dt>Question:</dt>
+			<dd>
+                <ul><li>
+                    <input id="question" name="question"/>
+                </li></ul>
+            </dd>
+			<dt>Answers:</dt>
+			<dd>
+				<ul id="answers" class="extendable-list"/>
+			</dd>
+            <dt>When can a visitor see the results?</dt>
+            <dd>
+                <ul>
+                    <li>
+                        <input type="radio" name="tallyVisibility" value="BEFORE"> Immediately after he votes
+                    </li>
+                    <li>
+                        <input type="radio" name="tallyVisibility" value="AFTER" selected> Immediately after voting closes
+                    </li>
+                </ul>
+            </dd>
+            <dt>How long will this vote be open?</dt>
+            <dd>
+                <ul>
+                    <li>
+                        Until I get <input id="count" type="number" name="count"/> votes OR
+                    </li>
+                    <li>
+                        Until <input id="endDate" type="number" name="hours" placeholder="24"/> hours from now
+                    </li>
+                </ul>
+            </dd>
+		</dl>
+		<input type="submit" class="btn btn-primary" value="Call for Vote"/>
+	</form>
+</div>
