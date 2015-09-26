@@ -6,7 +6,7 @@ require(["jquery", "mustache", "sammy", "sammy-mustache"], function($, Mustache,
     // define a 'route'
     this.get('#/vote/:vote', function() {
       // load some data
-      this.load('/vote/' + this.params.vote, { json : true })
+      this.load('vote/' + this.params.vote, { json : true })
           // render a template
           .render('client/views/vote.mustache')
 
@@ -17,7 +17,7 @@ require(["jquery", "mustache", "sammy", "sammy-mustache"], function($, Mustache,
                 var answerId = $("input[name=answerId]:checked").val();
                 if ( answerId && questionId ) {
                     $.ajax({
-                        url : '/vote/' + questionId + '/answer/' + answerId + '/cast',
+                        url : 'vote/' + questionId + '/answer/' + answerId + '/cast',
                         method : 'POST',
                         dataType : 'json',
                         contentType : 'application/hal+json'
@@ -75,7 +75,7 @@ require(["jquery", "mustache", "sammy", "sammy-mustache"], function($, Mustache,
             vote.whenAreResultsPublic = $("input[name='tallyVisibility']:selected").val();
         
 			$.ajax({
-				url : '/vote',
+				url : 'vote',
 				method : 'POST',
 				data : JSON.stringify(vote),
 				dataType : 'json',
