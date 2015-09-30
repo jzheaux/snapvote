@@ -72,7 +72,7 @@ require(["jquery", "mustache", "sammy", "sammy-mustache"], function($, Mustache,
 			vote.answers = $("input[name='answers']").map(function() { return { "text" : $(this).val() }; }).get();
             vote.duration = $("#duration").val();
             vote.maximumVotes = $("#count").val();
-            vote.whenAreResultsPublic = $("input[name='tallyVisibility']:selected").val();
+            vote.whenAreResultsPublic = $("input[name='tallyVisibility']:checked").val();
         
 			$.ajax({
 				url : 'vote',
