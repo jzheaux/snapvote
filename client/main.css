@@ -60,3 +60,24 @@ input[type='radio'] {
 dt {
 	text-align: left;
 }
+
+.progress {
+    display: inline-block;
+    border: 1px solid black;
+    position: relative;
+}
+
+.progress.answer {
+    float: right;
+    width: 50%;
+}
+
+.progress div {
+    height: 19px;
+    background-color: green;
+}
+
+.progress span {
+    position: absolute;
+    top: 0;
+}

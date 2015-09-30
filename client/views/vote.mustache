@@ -8,7 +8,11 @@
     {{#answers}}
         <li data-answer-id="{{id}}">
         {{#total}}
-        {{text}} {{amount}} votes
+        {{text}}
+        <div class="progress answer">
+            <div style="width: {{percentage}}%;"></div>
+            <span>{{amount}} votes</span>
+        </div>
         {{/total}}
         {{^total}}
             <input type="radio" name="answerId" value="{{id}}"> {{text}}
@@ -16,8 +20,18 @@
         </li>
     {{/answers}}
     </ul>
+    {{#percentage}}
+    <div class="progress">
+        <div style="width: {{percentage}}"></div>
+        <span>{{percentage}}% complete</span>
+    </div>
+    {{/percentage}}
     {{^total}}
     <input type="button" id="cast-vote" class="btn btn-primary" value="Cast Vote"/>
     {{/total}}
+    <span class='st_facebook_hcount' displayText='Facebook'></span>
+    <span class='st_googleplus_hcount' displayText='Google +'></span>
+    <span class='st_twitter_hcount' displayText='Tweet'></span>
+    <span class='st_email_hcount' displayText='Email'></span>
 </div>
 {{/description}}

@@ -67,12 +67,34 @@ module.exports = function(server) {
 		}
 	}
 
+    var addPercentagesToResults = function(results, cb) {
+        if ( results.maximumVotes ) {
+            results.percentage = ( results.total / results.maximumVotes ) * 100;
+        }
+        addPercentageResult(results, 0, cb);
+    }
+    
+    var addPercentageResult = function(results, index, cb) {
+        if ( results.answers.length > index ) {
+            results.answers[index].total.percentage = ( results.answers[index].total.amount / results.total.amount) * 100;
+            addPercentageResult(results, index + 1, cb);
+        } else {
+            cb(results);
+        }
+    }
+    
 	var getResults = function(vote, cb) {
 		var results = {};
 		results.question = vote.question;
 		results.answers = [];
+        results.maximumVotes = vote.maximumVotes;
+        results.endDate = vote.endDate;
 		vote.getAnswers().then(function(answers) {
-			addResultToResults(answers, results, 0, 0, cb);
+			addResultToResults(answers, results, 0, 0, 
+                function(results) {
+                    addPercentagesToResults(results, cb);
+                }
+            );
 		});
 	}
 
