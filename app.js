@@ -29,7 +29,7 @@ server.get("/", function (req, res) {
 
 server.pre(function(req, res, next) {
 	var agent = req.headers["user-agent"];
-	var address = req.connection.remoteAddress;
+	var address = req.header['x-forwarded-for'];
 	req.hash = new Buffer(agent + address).toString('base64');
 	next();
 });
